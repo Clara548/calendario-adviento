@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuestro calendario de adviento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1d2b24;
+    --bg-deep: #14201a;
+    --cream: #f6eedf;
+    --paper: #fbf6ec;
+    --red: #b8372f;
+    --red-dark: #8f2621;
+    --green: #2f5d46;
+    --gold: #d9a441;
+    --ink: #2a211c;
+    --muted: #a9b8ae;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg-deep); }
+  html, body { min-height: 100%; }
+  body {
+    font-family: "DM Sans", system-ui, sans-serif;
+    color: var(--cream);
+    background:
+      radial-gradient(ellipse at 50% -10%, #2f4a3c 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  /* ---------- Nieve ---------- */
+  #snow { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+  main {
+    position: relative; z-index: 1;
+    max-width: 980px; margin: 0 auto;
+    padding: 56px 20px 72px;
+  }
+
+  header { text-align: center; margin-bottom: 40px; }
+  .eyebrow {
+    font-size: 13px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 14px;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, serif; font-weight: 600;
+    font-size: clamp(34px, 6vw, 58px); line-height: 1.05;
+    letter-spacing: -.01em;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--gold); }
+  .subtitle {
+    margin-top: 14px; color: var(--muted); font-size: 16px;
+  }
+  .countdown {
+    display: inline-block; margin-top: 22px;
+    padding: 8px 16px; border-radius: 999px;
+    border: 1px solid rgba(217,164,65,.35);
+    color: var(--cream); font-size: 14px;
+    background: rgba(217,164,65,.08);
+  }
+
+  /* ---------- Rejilla ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-flow: dense;
+    gap: 14px;
+  }
+  @media (max-width: 760px) { .grid { grid-template-columns: repeat(4, 1fr); gap: 10px; } }
+  @media (max-width: 440px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .cell {
+    position: relative; aspect-ratio: 1 / 1;
+    perspective: 900px;
+  }
+  .cell.big { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; }
+
+  .inside {
+    position: absolute; inset: 0; border-radius: 12px;
+    background: var(--paper); color: var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; text-align: center; padding: 8px;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.06), inset 0 6px 18px rgba(0,0,0,.12);
+  }
+  .inside .emoji { font-size: clamp(24px, 4vw, 34px); }
+  .cell.big .inside .emoji { font-size: clamp(42px, 7vw, 64px); }
+  .inside .peek {
+    font-size: 11px; color: #7a6a5c; letter-spacing: .04em;
+  }
+
+  .door {
+    position: absolute; inset: 0; border-radius: 12px;
+    border: none; cursor: pointer;
+    font-family: "Fraunces", Georgia, serif; color: var(--cream);
+    transform-origin: left center;
+    transition: transform .9s cubic-bezier(.3,.7,.2,1), box-shadow .3s;
+    transform-style: preserve-3d;
+    box-shadow: 0 6px 16px rgba(0,0,0,.35);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .door::before {
+    content: ""; position: absolute; inset: 6px; border-radius: 8px;
+    border: 1.5px dashed rgba(246,238,223,.35);
+    pointer-events: none;
+  }
+  .door .num {
+    position: relative; font-weight: 600;
+    font-size: clamp(26px, 4.4vw, 40px);
+  }
+  .cell.big .door .num { font-size: clamp(54px, 9vw, 92px); }
+  .door .lock {
+    position: absolute; bottom: 9px; right: 11px; font-size: 13px; opacity: .65;
+    font-family: "DM Sans", sans-serif;
+  }
+
+  /* Colores alternos de las puertas */
+  .c0 .door { background: var(--red); }
+  .c1 .door { background: var(--green); }
+  .c2 .door { background: #a0522d; }
+  .c3 .door { background: #6d3b47; }
+  .c4 .door { background: #3d5a6c; }
+
+  .door:hover:not([aria-disabled]) { box-shadow: 0 10px 24px rgba(0,0,0,.45), 0 0 0 2px var(--gold); }
+  .door:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+  .door[aria-disabled] { cursor: not-allowed; filter: saturate(.55) brightness(.8); }
+  .cell.today .door { box-shadow: 0 0 0 3px var(--gold), 0 0 28px rgba(217,164,65,.55); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 3px var(--gold), 0 0 42px rgba(217,164,65,.8); } }
+
+  .cell.open .door {
+    transform: rotateY(-105deg);
+    box-shadow: none; pointer-events: none;
+  }
+  .cell.open .inside { cursor: pointer; }
+
+  .shake { animation: shake .4s; }
+  @keyframes shake {
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+  }
+
+  /* ---------- Modal ---------- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 10;
+    background: rgba(10,16,13,.72);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .card {
+    position: relative;
+    background: var(--paper); color: var(--ink);
+    width: min(460px, 100%);
+    border-radius: 18px; padding: 40px 32px 30px;
+    text-align: center;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+    transform: translateY(16px) scale(.97); transition: transform .35s cubic-bezier(.3,.7,.2,1);
+  }
+  .overlay.show .card { transform: none; }
+  .card::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px;
+    border-radius: 18px 18px 0 0;
+    background: repeating-linear-gradient(-45deg, var(--red) 0 12px, var(--paper) 12px 24px);
+  }
+  .card .day {
+    font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--red);
+  }
+  .card .big-emoji { font-size: 56px; margin: 12px 0 8px; }
+  .card h2 {
+    font-family: "Fraunces", Georgia, serif; font-weight: 600;
+    font-size: 26px; line-height: 1.2; margin-bottom: 12px;
+  }
+  .card p { font-size: 17px; line-height: 1.55; color: #4a3d33; }
+  .card .gift {
+    margin-top: 18px; padding: 12px 14px; border-radius: 10px;
+    background: #f1e6d0; font-size: 15px; color: var(--ink);
+  }
+  .card .gift strong { color: var(--red-dark); }
+  .card .close {
+    margin-top: 24px; border: none; cursor: pointer;
+    background: var(--red); color: var(--cream);
+    font: 500 15px "DM Sans", sans-serif;
+    padding: 11px 26px; border-radius: 999px;
+  }
+  .card .close:hover { background: var(--red-dark); }
+  .card .x {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none; font-size: 22px; color: #9a8a7c; cursor: pointer;
+  }
+
+  footer {
+    text-align: center; margin-top: 40px; color: var(--muted); font-size: 14px;
+  }
+  footer .heart { color: var(--red); }
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px);
+    background: var(--cream); color: var(--ink);
+    padding: 10px 18px; border-radius: 999px; font-size: 14px;
+    opacity: 0; transition: .3s; z-index: 20; pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .door, .card, .overlay { transition: none; }
+    .cell.today .door { animation: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+
+<main>
+  <header>
+    <div class="eyebrow">Diciembre 2026</div>
+    <h1 id="title">Un regalito <em>cada día</em></h1>
+    <p class="subtitle" id="subtitle"></p>
+    <div class="countdown" id="countdown"></div>
+  </header>
+
+  <section class="grid" id="grid" aria-label="Casillas del calendario"></section>
+
+  <footer id="footer"></footer>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="card">
+    <button class="x" id="x" aria-label="Cerrar">×</button>
+    <div class="day" id="m-day"></div>
+    <div class="big-emoji" id="m-emoji"></div>
+    <h2 id="m-title"></h2>
+    <p id="m-text"></p>
+    <div class="gift" id="m-gift" hidden></div>
+    <button class="close" id="close">Cerrar</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   PERSONALIZA AQUÍ ✏️
+   - nombre: su nombre (aparece en el título)
+   - firma:  cómo firmas tú al final
+   - year:   el año del calendario
+   - dias:   un mensaje por día. "regalo" es opcional: si lo pones,
+             aparece una cajita debajo (un plan, una pista, un vale...).
+   ===================================================================== */
+const CONFIG = {
+  nombre: "mi amor",
+  firma: "Con todo mi cariño",
+  year: 2026,
+  dias: [
+    { emoji: "❄️", titulo: "¡Empieza la cuenta atrás!", texto: "24 días, 24 sorpresas. Cada mañana tienes una casilla nueva esperándote. Hoy empezamos con lo más fácil: te quiero.", regalo: "Vale por un chocolate caliente juntos esta tarde." },
+    { emoji: "☕", titulo: "Tu sonrisa por la mañana", texto: "Es lo primero que me alegra el día, aunque sea a través de un mensaje.", regalo: "" },
+    { emoji: "🎵", titulo: "Nuestra canción", texto: "Ponla hoy en algún momento y piensa en mí. Yo haré lo mismo.", regalo: "" },
+    { emoji: "📸", titulo: "Un recuerdo", texto: "¿Te acuerdas de nuestra primera foto juntos? Yo sí, cada detalle.", regalo: "Busca la foto y mándamela 💌" },
+    { emoji: "🍪", titulo: "Algo dulce", texto: "Porque tú ya lo eres, pero nunca sobra un poco más.", regalo: "Vale por una tarde de hacer galletas navideñas." },
+    { emoji: "🌟", titulo: "Lo que admiro de ti", texto: "Tu forma de cuidar a la gente que quieres. Me inspira cada día.", regalo: "" },
+    { emoji: "🎬", titulo: "Plan de sofá", texto: "Manta, palomitas y peli navideña. Tú eliges, yo no protesto (prometido).", regalo: "Vale por una noche de peli a tu elección." },
+    { emoji: "💌", titulo: "Una carta", texto: "Hoy no hay mensaje largo aquí… porque te lo he escrito a mano.", regalo: "Pídeme tu carta 😉" },
+    { emoji: "🧣", titulo: "Abrígate", texto: "Hace frío fuera, pero conmigo nunca vas a tenerlo.", regalo: "" },
+    { emoji: "🗺️", titulo: "Un sitio pendiente", texto: "Ese lugar que siempre decimos que vamos a visitar… este año sí.", regalo: "Vale por una escapada juntos." },
+    { emoji: "😂", titulo: "Ríete un poco", texto: "Recuerda aquella vez que no podíamos parar de reír. Eres mi persona favorita para hacer el tonto.", regalo: "" },
+    { emoji: "🍝", titulo: "Hoy cocino yo", texto: "Tu plato favorito, con todo el amor (y algo de caos en la cocina).", regalo: "Vale por una cena hecha por mí." },
+    { emoji: "🌙", titulo: "Buenas noches", texto: "Que sepas que eres lo último en lo que pienso antes de dormir.", regalo: "" },
+    { emoji: "💆", titulo: "Mímate", texto: "Te mereces un día tranquilo, sin prisas, solo para ti.", regalo: "Vale por un masaje de 20 minutos." },
+    { emoji: "🎄", titulo: "Ya queda menos", texto: "Estamos a mitad de camino. ¿Decoramos algo juntos este finde?", regalo: "" },
+    { emoji: "📖", titulo: "Nuestra historia", texto: "Si nuestra relación fuera un libro, este sería mi capítulo favorito.", regalo: "" },
+    { emoji: "🎁", titulo: "Pequeña sorpresa", texto: "Hoy hay algo físico esperándote. Busca bien…", regalo: "Pista: mira donde guardas las llaves." },
+    { emoji: "🥂", titulo: "Brindemos", texto: "Por todo lo que hemos vivido este año y por todo lo que viene.", regalo: "" },
+    { emoji: "🌹", titulo: "Porque sí", texto: "No hace falta una razón para decirte lo guapa que eres. Pero hoy te lo digo igual.", regalo: "" },
+    { emoji: "⛸️", titulo: "Plan de invierno", texto: "Luces de Navidad, paseo y algo calentito en la mano.", regalo: "Vale por un paseo para ver las luces." },
+    { emoji: "🤗", titulo: "Un abrazo largo", texto: "De esos que lo arreglan todo. Cóbralo cuando quieras.", regalo: "Vale por un abrazo de 1 minuto (mínimo)." },
+    { emoji: "✨", titulo: "Gracias", texto: "Por tu paciencia, por tu risa y por elegirme cada día.", regalo: "" },
+    { emoji: "🔔", titulo: "Mañana es Nochebuena", texto: "Ya casi está aquí. Lo mejor de estas fiestas es pasarlas contigo.", regalo: "" },
+    { emoji: "❤️", titulo: "¡Feliz Nochebuena!", texto: "La última casilla, pero no la última sorpresa. Gracias por ser mi mejor regalo, este año y todos los que vengan.", regalo: "Tu regalo de verdad te está esperando debajo del árbol 🎁" }
+  ]
+};
+/* ===================================================================== */
+
+const STORE_KEY = "adviento-abiertas-" + CONFIG.year;
+const params = new URLSearchParams(location.search);
+// Modo prueba: añade ?prueba a la URL para abrir cualquier casilla.
+// También puedes simular una fecha: ?dia=10
+const PREVIEW = params.has("prueba");
+const FAKE_DAY = params.get("dia") ? parseInt(params.get("dia"), 10) : null;
+
+function madridNow() {
+  // Fecha actual en hora de España
+  const s = new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" });
+  return new Date(s);
+}
+function unlockedUpTo() {
+  if (PREVIEW) return 24;
+  if (FAKE_DAY) return Math.min(24, FAKE_DAY);
+  const now = madridNow();
+  if (now.getFullYear() > CONFIG.year) return 24;
+  if (now.getFullYear() < CONFIG.year || now.getMonth() < 11) return 0;
+  return Math.min(24, now.getDate());
+}
+
+function loadOpened() {
+  try { return new Set(JSON.parse(localStorage.getItem(STORE_KEY) || "[]")); }
+  catch { return new Set(); }
+}
+function saveOpened(set) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify([...set])); } catch {}
+}
+
+const opened = loadOpened();
+const maxDay = unlockedUpTo();
+
+// Orden mezclado (fijo) para que parezca un calendario de verdad
+const ORDER = [7, 15, 2, 20, 11, 24, 5, 18, 9, 1, 22, 13, 16, 3, 19, 8, 12, 23, 6, 14, 21, 4, 17, 10];
+
+document.getElementById("title").innerHTML = `Un regalito <em>cada día</em>`;
+document.getElementById("subtitle").textContent = `Para ${CONFIG.nombre}, del 1 al 24 de diciembre`;
+document.getElementById("footer").innerHTML = `${CONFIG.firma} <span class="heart">♥</span>`;
+
+function renderCountdown() {
+  const el = document.getElementById("countdown");
+  const now = madridNow();
+  if (maxDay === 0) {
+    const start = new Date(CONFIG.year, 11, 1);
+    const diff = Math.ceil((start - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+    el.textContent = diff === 1 ? "La primera casilla se abre mañana ✨" : `Faltan ${diff} días para abrir la primera casilla`;
+  } else if (maxDay < 24) {
+    const left = 24 - maxDay;
+    el.textContent = `Hoy toca la casilla ${maxDay} · quedan ${left} ${left === 1 ? "día" : "días"} para Nochebuena`;
+  } else {
+    el.textContent = "¡Feliz Navidad! 🎄 Todas las casillas están abiertas";
+  }
+}
+
+const grid = document.getElementById("grid");
+ORDER.forEach((d, i) => {
+  const data = CONFIG.dias[d - 1];
+  const cell = document.createElement("div");
+  cell.className = `cell c${i % 5}` + (d === 24 ? " big" : "");
+  if (opened.has(d) && d <= maxDay) cell.classList.add("open");
+  if (d === maxDay && !opened.has(d) && maxDay < 25) cell.classList.add("today");
+
+  const inside = document.createElement("div");
+  inside.className = "inside";
+  inside.innerHTML = `<span class="emoji">${data.emoji}</span><span class="peek">Día ${d}</span>`;
+  inside.addEventListener("click", () => showModal(d));
+
+  const door = document.createElement("button");
+  door.className = "door";
+  door.setAttribute("aria-label", d <= maxDay ? `Abrir casilla ${d}` : `Casilla ${d}, todavía cerrada`);
+  door.innerHTML = `<span class="num">${d}</span>` + (d > maxDay ? `<span class="lock">🔒</span>` : "");
+  if (d > maxDay) door.setAttribute("aria-disabled", "true");
+
+  door.addEventListener("click", () => {
+    if (d > maxDay) {
+      cell.classList.remove("shake"); void cell.offsetWidth; cell.classList.add("shake");
+      toast(`¡Paciencia! La casilla ${d} se abre el ${d} de diciembre 😉`);
+      return;
+    }
+    cell.classList.add("open"); cell.classList.remove("today");
+    opened.add(d); saveOpened(opened);
+    setTimeout(() => showModal(d), 650);
+  });
+
+  cell.append(inside, door);
+  grid.appendChild(cell);
+});
+
+// Modal
+const overlay = document.getElementById("overlay");
+function showModal(d) {
+  const data = CONFIG.dias[d - 1];
+  document.getElementById("m-day").textContent = `${d} de diciembre`;
+  document.getElementById("m-emoji").textContent = data.emoji;
+  document.getElementById("m-title").textContent = data.titulo;
+  document.getElementById("m-text").textContent = data.texto;
+  const gift = document.getElementById("m-gift");
+  if (data.regalo) { gift.hidden = false; gift.innerHTML = `<strong>🎁 </strong>`; gift.append(data.regalo); }
+  else gift.hidden = true;
+  overlay.classList.add("show");
+  document.getElementById("close").focus();
+  if (d === 24) burst();
+}
+function hideModal() { overlay.classList.remove("show"); }
+document.getElementById("close").onclick = hideModal;
+document.getElementById("x").onclick = hideModal;
+overlay.addEventListener("click", e => { if (e.target === overlay) hideModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") hideModal(); });
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+renderCountdown();
+
+/* ---------- Nieve ---------- */
+const canvas = document.getElementById("snow");
+const ctx = canvas.getContext("2d");
+let flakes = [], W, H;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function resize() {
+  W = canvas.width = innerWidth * devicePixelRatio;
+  H = canvas.height = innerHeight * devicePixelRatio;
+  canvas.style.width = innerWidth + "px"; canvas.style.height = innerHeight + "px";
+  const n = Math.round(innerWidth / 12);
+  flakes = Array.from({ length: n }, () => newFlake(true));
+}
+function newFlake(anywhere) {
+  return {
+    x: Math.random() * W, y: anywhere ? Math.random() * H : -10,
+    r: (Math.random() * 2.2 + .8) * devicePixelRatio,
+    s: (Math.random() * .6 + .3) * devicePixelRatio,
+    d: Math.random() * Math.PI * 2, o: Math.random() * .5 + .35, c: null
+  };
+}
+let confetti = [];
+function burst() {
+  const colors = ["#d9a441", "#b8372f", "#f6eedf", "#2f5d46"];
+  for (let i = 0; i < 140; i++) {
+    confetti.push({
+      x: W / 2, y: H / 2, vx: (Math.random() - .5) * 18 * devicePixelRatio,
+      vy: (Math.random() - .9) * 16 * devicePixelRatio, r: (Math.random() * 3 + 2) * devicePixelRatio,
+      c: colors[i % colors.length], life: 120
+    });
+  }
+}
+function tick() {
+  ctx.clearRect(0, 0, W, H);
+  if (!reduce) {
+    for (const f of flakes) {
+      f.y += f.s; f.d += .01; f.x += Math.sin(f.d) * .4 * devicePixelRatio;
+      if (f.y > H + 10) Object.assign(f, newFlake(false));
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(246,238,223,${f.o})`; ctx.fill();
+    }
+  }
+  confetti = confetti.filter(p => p.life-- > 0);
+  for (const p of confetti) {
+    p.vy += .35 * devicePixelRatio; p.x += p.vx; p.y += p.vy; p.vx *= .98;
+    ctx.globalAlpha = Math.min(1, p.life / 40);
+    ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, p.r, p.r * 1.6);
+    ctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(tick);
+}
+addEventListener("resize", resize);
+resize(); tick();
+</script>
+</body>
+</html>
