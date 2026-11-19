@@ -183,7 +183,8 @@
     box-shadow: 0 6px 18px rgba(0,0,0,.18);
   }
   .card { max-height: 92vh; overflow-y: auto; }
-  .card p { font-size: 17px; line-height: 1.55; color: #4a3d33; }
+  .card p { font-size: 17px; line-height: 1.55; color: #4a3d33; white-space: pre-line; }
+  .card p.poem { font-family: "Fraunces", Georgia, serif; font-style: italic; font-size: 18px; line-height: 1.6; }
   .card .gift {
     margin-top: 18px; padding: 12px 14px; border-radius: 10px;
     background: #f1e6d0; font-size: 15px; color: var(--ink);
@@ -267,7 +268,7 @@ const CONFIG = {
   dias: [
     { emoji: "❄️", titulo: "¡Empieza la cuenta atrás!", texto: "24 días, 24 sorpresas. Aunque nos separen unos cuantos kilómetros, cada mañana vas a tener un trocito de mí esperándote aquí. Y hoy empiezo con lo más fácil: te quiero.", regalo: "Vale para invitarte a cenar 🍽️" },
     { emoji: "☕", titulo: "Buenos días desde aquí", texto: "Tu mensaje de buenos días es lo primero que me alegra la mañana. Hoy quiero ser yo la que te alegre la tuya.", regalo: "" },
-    { emoji: "🎵", titulo: "Nuestra canción", texto: "Ponla hoy en algún momento y piensa en mí. Yo la estaré escuchando a la vez desde aquí.", regalo: "Dime a qué hora la pones y le damos al play a la vez 🎧" },
+    { emoji: "🎵", titulo: "Nuestra canción", poema: true, texto: "Tu corazón marca el compás,\nel mío lo sigue sin dudar;\nsomos dos notas diferentes\nque juntas suenan a hogar.\n\nNo hay kilómetros que nos callen,\nni silencio que nos pueda apagar:\ncada latido tuyo es un verso\nque mi pecho aprende a cantar.", regalo: "Dime a qué hora la pones y le damos al play a la vez 🎧" },
     { emoji: "📸", titulo: "Un recuerdo", foto: "fotos/dia4.jpg", texto: "Mira lo que he encontrado… Esta foto la miro más veces de las que te imaginas.", regalo: "Ahora te toca a ti: mándame tu foto favorita de nosotras 💌" },
     { emoji: "🍪", titulo: "Algo dulce", texto: "Porque tú ya lo eres, pero nunca sobra un poco más.", regalo: "Vale por una tarde de galletas navideñas cocinando 'juntas' por videollamada." },
     { emoji: "🌟", titulo: "Lo que admiro de ti", texto: "Tu forma de cuidar a la gente que quieres, incluso a distancia. Me haces sentir cerca aunque no lo estemos.", regalo: "" },
@@ -389,6 +390,7 @@ function showModal(d) {
   document.getElementById("m-emoji").textContent = data.emoji;
   document.getElementById("m-title").textContent = data.titulo;
   document.getElementById("m-text").textContent = data.texto;
+  document.getElementById("m-text").className = data.poema ? "poem" : "";
   const photo = document.getElementById("m-photo");
   if (data.foto) { photo.src = data.foto; photo.alt = data.titulo; photo.hidden = false; }
   else { photo.hidden = true; photo.removeAttribute("src"); }
