@@ -295,11 +295,9 @@ const CONFIG = {
 /* ===================================================================== */
 
 const STORE_KEY = "adviento-abiertas-" + CONFIG.year;
-const params = new URLSearchParams(location.search);
-// Modo prueba: añade ?prueba a la URL para abrir cualquier casilla.
-// También puedes simular una fecha: ?dia=10
-const PREVIEW = params.has("prueba");
-const FAKE_DAY = params.get("dia") ? parseInt(params.get("dia"), 10) : null;
+// Cada casilla solo se abre a partir de su día de diciembre (hora de España).
+const PREVIEW = false;
+const FAKE_DAY = null;
 
 function madridNow() {
   // Fecha actual en hora de España
