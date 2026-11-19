@@ -177,6 +177,12 @@
     font-family: "Fraunces", Georgia, serif; font-weight: 600;
     font-size: 26px; line-height: 1.2; margin-bottom: 12px;
   }
+  .card .photo {
+    display: block; max-width: 100%; max-height: 46vh; margin-left: auto !important; margin-right: auto !important;
+    border-radius: 10px; margin: 4px 0 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  }
+  .card { max-height: 92vh; overflow-y: auto; }
   .card p { font-size: 17px; line-height: 1.55; color: #4a3d33; }
   .card .gift {
     margin-top: 18px; padding: 12px 14px; border-radius: 10px;
@@ -236,6 +242,7 @@
     <div class="day" id="m-day"></div>
     <div class="big-emoji" id="m-emoji"></div>
     <h2 id="m-title"></h2>
+    <img class="photo" id="m-photo" alt="" hidden>
     <p id="m-text"></p>
     <div class="gift" id="m-gift" hidden></div>
     <button class="close" id="close">Cerrar</button>
@@ -249,7 +256,8 @@
    - nombre: su nombre (aparece en el título)
    - firma:  cómo firmas tú al final
    - year:   el año del calendario
-   - dias:   un mensaje por día. "regalo" es opcional: si lo pones,
+   - dias:   un mensaje por día. "foto" es opcional (ruta a una imagen
+             en la carpeta fotos/). "regalo" también es opcional: si lo pones,
              aparece una cajita debajo (un plan, una pista, un vale...).
    ===================================================================== */
 const CONFIG = {
@@ -260,7 +268,7 @@ const CONFIG = {
     { emoji: "❄️", titulo: "¡Empieza la cuenta atrás!", texto: "24 días, 24 sorpresas. Aunque nos separen unos cuantos kilómetros, cada mañana vas a tener un trocito de mí esperándote aquí. Y hoy empiezo con lo más fácil: te quiero.", regalo: "Esta noche, videollamada con chocolate caliente. Cada una con su taza." },
     { emoji: "☕", titulo: "Buenos días desde aquí", texto: "Tu mensaje de buenos días es lo primero que me alegra la mañana. Hoy quiero ser yo la que te alegre la tuya.", regalo: "" },
     { emoji: "🎵", titulo: "Nuestra canción", texto: "Ponla hoy en algún momento y piensa en mí. Yo la estaré escuchando a la vez desde aquí.", regalo: "Dime a qué hora la pones y le damos al play a la vez 🎧" },
-    { emoji: "📸", titulo: "Un recuerdo", texto: "¿Te acuerdas de nuestra primera foto juntas? Yo la miro más veces de las que te imaginas.", regalo: "Busca tu foto favorita de nosotras y mándamela 💌" },
+    { emoji: "📸", titulo: "Un recuerdo", foto: "fotos/dia4.jpg", texto: "Mira lo que he encontrado… Esta foto la miro más veces de las que te imaginas.", regalo: "Ahora te toca a ti: mándame tu foto favorita de nosotras 💌" },
     { emoji: "🍪", titulo: "Algo dulce", texto: "Porque tú ya lo eres, pero nunca sobra un poco más.", regalo: "Vale por una tarde de galletas navideñas cocinando 'juntas' por videollamada." },
     { emoji: "🌟", titulo: "Lo que admiro de ti", texto: "Tu forma de cuidar a la gente que quieres, incluso a distancia. Me haces sentir cerca aunque no lo estemos.", regalo: "" },
     { emoji: "🎬", titulo: "Cine a distancia", texto: "Manta, palomitas y peli navideña. Le damos al play a la vez y la comentamos como si estuviéramos en el mismo sofá.", regalo: "Vale por una noche de peli a tu elección (no protesto, prometido)." },
@@ -381,6 +389,9 @@ function showModal(d) {
   document.getElementById("m-emoji").textContent = data.emoji;
   document.getElementById("m-title").textContent = data.titulo;
   document.getElementById("m-text").textContent = data.texto;
+  const photo = document.getElementById("m-photo");
+  if (data.foto) { photo.src = data.foto; photo.alt = data.titulo; photo.hidden = false; }
+  else { photo.hidden = true; photo.removeAttribute("src"); }
   const gift = document.getElementById("m-gift");
   if (data.regalo) { gift.hidden = false; gift.innerHTML = `<strong>🎁 </strong>`; gift.append(data.regalo); }
   else gift.hidden = true;
