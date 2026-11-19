@@ -359,7 +359,12 @@ ORDER.forEach((d, i) => {
   const inside = document.createElement("div");
   inside.className = "inside";
   inside.innerHTML = `<span class="emoji">${data.emoji}</span><span class="peek">Día ${d}</span>`;
-  inside.addEventListener("click", () => showModal(d));
+  inside.title = "Pulsa para cerrar la casilla";
+  inside.addEventListener("click", () => {
+    // Cerrar la puertecita (se puede volver a abrir cuando quiera)
+    cell.classList.remove("open");
+    opened.delete(d); saveOpened(opened);
+  });
 
   const door = document.createElement("button");
   door.className = "door";
